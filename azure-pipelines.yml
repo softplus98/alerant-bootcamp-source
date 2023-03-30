@@ -1,0 +1,35 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- task: Maven@4
+  inputs:
+    mavenPomFile: 'pom.xml'
+    publishJUnitResults: true
+    testResultsFiles: '**/surefire-reports/TEST-*.xml'
+    javaHomeOption: 'JDKVersion'
+    mavenVersionOption: 'Default'
+    mavenAuthenticateFeed: false
+    effectivePomSkip: false
+    sonarQubeRunAnalysis: false
+
+- task: CmdLine@2
+    inputs:
+      script: |
+        buildah bud --tls-verify=0 --format=docker -t alerantdevopsbootcamp.azurecr.io/bootcamp/demoapp_student2 -f
+Dockerfile .
+        buildah login --tls-verify=0 -u alerantdevopsbootcamp -p VQq7EvmIbRzlT9N6Z/HA4xND8=dQYyYg alerantdevopsbootcamp.azurecr.io
+        buildah push alerantdevopsbootcamp.azurecr.io/bootcamp/student2
+
+- script: |
+    echo Add other tasks to build, test, and deploy your project.
+    echo See https://aka.ms/yaml
+  displayName: 'Run a multi-line script'
